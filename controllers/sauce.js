@@ -53,49 +53,32 @@ exports.getAllSauce = (req, res, next) => {
 //Like/Dislike
 exports.likeASauce = (req, res, next) => {
    switch (req.body.like) {
-     
-    case 0:
-      sauce.findOne()({ _id: req.params.id })
-      .then((sauce) => {
-        let arrayResult = sauce.usersDisliked.find(req.body.userId)
-        if(arrayResult != null){
-          Sauce.updateOne({_id: req.params.id}, {$pull:{usersDisliked: req.body.userId}, $inc:{dislikes: -1}})
-        .then(() => res.status(201).json({ message: 'Modification effectuée !'}))
-        .catch(error => res.status(400).json({ error }));
-        }
-      arrayResult = sauce.usersLiked.find(req.body.userId)
-        if(arrayResult != null){
-          sauce.updateOne({_id: req.params.id}, {$pull:{userLiked: req.body.userId}, $inc:{likes: -1}})
-        .then(() => res.status(201).json({ message: 'Modification effectuée !'}))
-        .catch(error => res.status(400).json({ error }));
-        }
-      })
-      .catch(error => res.status(400).json({ error }));  
-         
+  
+    case -1:
+      Sauce.updateOne({_id:req.params.id},{ $push:{usersDisliked: req.body.userId}, $inc:{dislikes: 1}})
+      .then(() => res.status(200).json({ message: 'Sauce DisLikée !'}))
+      .catch(error => res.status(400).json({ error }));
       break;
 
     case 1:
-      sauce.findOne()({ _id: req.params.id })
-      .then((sauce) => {
-        let disliked = sauce.usersDisliked.find(req.body.userId)
-        if(disliked = null){
-      sauce.updateOne({_id:req.params.id},{ $push:{userLiked: req.body.userId}, $inc:{likes: 1}})
+      Sauce.updateOne({_id:req.params.id},{ $push:{usersLiked: req.body.userId}, $inc:{likes: 1}})
       .then(() => res.status(200).json({ message: 'Sauce Likée !'}))
       .catch(error => res.status(400).json({ error })); 
-      }else(console.error("Il y a une un probleme lors de votre requette veillez reessayer"));  
-      })   
-      .catch(error => res.status(400).json({ error }));    
       break;
 
-    case -1:
-      sauce.findOne()({ _id: req.params.id })
+    case 0:
+      Sauce.findOne({ _id: req.params.id })
       .then((sauce) => {
-        let liked = sauce.usersLiked.find(req.body.userId)
-        if(disliked = null){
-      sauce.updateOne({_id:req.params.id},{ $push:{userDisliked: req.body.userId}, $inc:{dislikes: 1}})
-      .then(() => res.status(200).json({ message: 'Sauce DisLikée !'}))
-      .catch(error => res.status(400).json({ error }));
-        }else(console.error("Il y a une un probleme lors de votre requette veillez reessayer"));
+        if(sauce.usersDisliked.find(user => user === req.body.userId)){
+          Sauce.updateOne({_id: req.params.id}, {$pull:{usersDisliked: req.body.userId}, $inc:{dislikes: -1}})
+          .then(() => res.status(201).json({ message: 'Modification effectuée !'}))
+          .catch(error => res.status(400).json({ error }));
+        }
+        if(sauce.usersLiked.find(user => user === req.body.userId)){
+          Sauce.updateOne({_id: req.params.id}, {$pull:{usersLiked: req.body.userId}, $inc:{likes: -1}})
+          .then(() => res.status(201).json({ message: 'Modification effectuée !'}))
+          .catch(error => res.status(400).json({ error }));
+        }
       })
       .catch(error => res.status(400).json({ error }));
       break;
@@ -105,4 +88,3 @@ exports.likeASauce = (req, res, next) => {
       break;
    } 
 };
-
