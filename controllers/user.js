@@ -3,18 +3,28 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
+const regexPassword = (password) => {
+  let regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  return regex.test(password);
+};
+
 exports.signup = (req, res, next) => {
+  let test = regexPassword(req.body.password);
+  if (test) {
     bcrypt.hash(req.body.password, 10)
-    .then(hash => {
+      .then(hash => {
         const user = new User({
-            email: req.body.email,
-            password: hash
+          email: req.body.email,
+          password: hash
         });
         user.save()
-        .then(() => res.status(201).json({ message : 'Utilisateur créé !'}))
-        .catch(error => res.status(500).json({ error }));
-    })
-    .catch(error => res.status(500).json({ error }));
+          .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+          .catch(error => res.status(500).json({ error }));
+      })
+      .catch(error => res.status(500).json({ error }));
+  } else {
+    return res.status(404).json({ message: 'Weak Password' });
+  }
 };
 
 exports.login = (req, res, next) => {
